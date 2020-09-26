@@ -26,8 +26,8 @@ func main() {
 	}
 	r := gin.Default()
 	r.GET("/countries", router.Countries)
-	//r.GET("/countries/:country", countryHandler)
-	//r.GET("/countries/:country/dates", countryDatesHandler)
-	//r.GET("/countries/:country/dates/:date", countryDateHandler)
+	r.GET("/countries/:code", router.Country)
+	r.GET("/countries/:code/dates", router.CountryDates)
+	r.GET("/countries/:code/dates/:date", router.CountryDate)
 	r.Run()
 }

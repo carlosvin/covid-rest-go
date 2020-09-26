@@ -23,4 +23,5 @@ type Country interface {
 	CountryCode() string
 	CountryName() string
 	Dates() map[time.Time]RecordInfo
+	Add(rec *readers.Record)
 }

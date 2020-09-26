@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/carlosvin/covid-rest-go/readers"
+	constants "github.com/carlosvin/covid-rest-go/utils"
 )
 
 // Repo retrieve all statistics
 type Repo interface {
 	Countries() map[string]Country
 	// country(code string) string
-	// countryDates(code string) string
-	// countryDate(code string, date time.Time) string
+	CountryDates(code string) map[time.Time]RecordInfo
+	CountryDate(code string, date time.Time) RecordInfo
 }
 
 type repoImpl struct {
@@ -23,6 +24,22 @@ type repoImpl struct {
 
 func (r *repoImpl) Countries() map[string]Country {
 	return r.countries
+}
+func (r *repoImpl) CountryDates(code string) map[time.Time]RecordInfo {
+	country, found := r.countries[code]
+	if found {
+		return country.Dates()
+	}
+	return nil
+}
+
+func (r *repoImpl) CountryDate(code string, date time.Time) RecordInfo {
+	country, found := r.countries[code]
+	if found {
+		r, _ := country.Dates()[date]
+		return r
+	}
+	return nil
 }
 
 var c Country = &recordCountry{}
@@ -56,7 +73,7 @@ func NewRepo(source readers.DataSource) Repo {
 			}
 			repo.countries[record.CountryCode] = country
 		}
-		country.Info().Add(record)
+		country.Add(record)
 	}
 	return &repo
 }
@@ -93,7 +110,7 @@ func (c *recordCountry) Add(record *readers.Record) {
 		date = &recordInfo{
 			confirmed: 0,
 			deaths:    0,
-			path:      fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format("2006-01-02")),
+			path:      fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format(constants.DateFormat)),
 		}
 		c.dates[record.Date] = date
 	}
