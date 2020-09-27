@@ -3,6 +3,7 @@ package repo
 import (
 	"fmt"
 	"io"
+	"log"
 	"time"
 
 	"github.com/carlosvin/covid-rest-go/readers"
@@ -15,11 +16,14 @@ type Repo interface {
 	// country(code string) string
 	CountryDates(code string) map[time.Time]RecordInfo
 	CountryDate(code string, date time.Time) RecordInfo
+	Fetch() error
+	Watch(period time.Duration)
 }
 
 type repoImpl struct {
 	countries map[string]Country
 	info      RecordInfo
+	factory   readers.Factory
 }
 
 func (r *repoImpl) Countries() map[string]Country {
@@ -33,6 +37,20 @@ func (r *repoImpl) CountryDates(code string) map[time.Time]RecordInfo {
 	return nil
 }
 
+func (r *repoImpl) Watch(period time.Duration) {
+	go func() {
+		for true {
+			time.Sleep(period)
+			err := r.Fetch()
+			if err == nil {
+				log.Println("Remote data successfully fetched")
+			} else {
+				log.Println(err)
+			}
+		}
+	}()
+}
+
 func (r *repoImpl) CountryDate(code string, date time.Time) RecordInfo {
 	country, found := r.countries[code]
 	if found {
@@ -44,7 +62,7 @@ func (r *repoImpl) CountryDate(code string, date time.Time) RecordInfo {
 
 var c Country = &recordCountry{}
 
-func NewRepo(source readers.DataSource) Repo {
+func NewRepo(factory readers.Factory) Repo {
 	repo := repoImpl{
 		countries: make(map[string]Country),
 		info: &recordInfo{
@@ -52,14 +70,23 @@ func NewRepo(source readers.DataSource) Repo {
 			deaths:    0,
 			path:      "",
 		},
+		factory: factory,
+	}
+	return &repo
+}
+
+func (r *repoImpl) Fetch() error {
+	source, err := r.factory.NewReader()
+	if err != nil {
+		return err
 	}
 	for {
-		record, err := source.Read()
+		var record, err = source.Read()
 		if err == io.EOF {
 			break
 		}
-		repo.info.Add(record)
-		country, found := repo.countries[record.CountryCode]
+		r.info.Add(record)
+		country, found := r.countries[record.CountryCode]
 		if !found {
 			country = &recordCountry{
 				code:  record.CountryCode,
@@ -68,14 +95,14 @@ func NewRepo(source readers.DataSource) Repo {
 				info: &recordInfo{
 					confirmed: 0,
 					deaths:    0,
-					path:      fmt.Sprintf("%s/countries/%s", repo.info.Path(), record.CountryCode),
+					path:      fmt.Sprintf("%s/countries/%s", r.info.Path(), record.CountryCode),
 				},
 			}
-			repo.countries[record.CountryCode] = country
+			r.countries[record.CountryCode] = country
 		}
 		country.Add(record)
 	}
-	return &repo
+	return nil
 }
 
 type recordInfo struct {

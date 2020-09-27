@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"time"
 
 	"github.com/carlosvin/covid-rest-go/repo"
 
@@ -12,18 +11,13 @@ import (
 )
 
 func main() {
-	csvReader, err := readers.NewCsvReader()
+	repository := repo.NewRepo(readers.NewFactory())
+	router := handlers.NewRouter(repository)
+	err := repository.Fetch()
 	if err != nil {
 		panic(err)
 	}
-	router := handlers.NewRouter(repo.NewRepo(csvReader))
-	for {
-		record, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		fmt.Println(record)
-	}
+	repository.Watch(time.Hour)
 	r := gin.Default()
 	r.GET("/countries", router.Countries)
 	r.GET("/countries/:code", router.Country)

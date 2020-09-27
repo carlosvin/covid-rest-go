@@ -7,8 +7,10 @@ import (
 	"time"
 )
 
+var client = http.Client{Timeout: 10 * time.Second}
+
 func NewCsvReader() (DataSource, error) {
-	resp, err := http.Get("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv")
+	resp, err := client.Get("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv")
 	if err != nil {
 		return nil, err
 	}
