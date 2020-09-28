@@ -4,7 +4,7 @@ type Factory interface {
 	NewReader() (DataSource, error)
 }
 
-func NewFactory() Factory {
+func NewReaderFactory() Factory {
 	return &factoryImpl{}
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	repository := repo.NewRepo(readers.NewFactory())
+	repository := repo.NewRepo(readers.NewReaderFactory())
 	router := handlers.NewRouter(repository)
 	err := repository.Fetch()
 	if err != nil {
