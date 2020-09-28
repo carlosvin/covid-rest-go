@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/carlosvin/covid-rest-go/readers"
-	constants "github.com/carlosvin/covid-rest-go/utils"
 )
+
+const DateFormat = "2006-01-02"
 
 // Repo retrieve all statistics
 type Repo interface {
@@ -137,7 +138,7 @@ func (c *recordCountry) Add(record *readers.Record) {
 		date = &recordInfo{
 			confirmed: 0,
 			deaths:    0,
-			path:      fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format(constants.DateFormat)),
+			path:      fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format(DateFormat)),
 		}
 		c.dates[record.Date] = date
 	}

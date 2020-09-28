@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/carlosvin/covid-rest-go/repo"
-	constants "github.com/carlosvin/covid-rest-go/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -82,13 +81,13 @@ func (r *routerImpl) countryDates(code string) map[string]*dateResponse {
 	}
 	datesResp := make(map[string]*dateResponse)
 	for t, date := range dates {
-		datesResp[t.Format(constants.DateFormat)] = r.toDateResponse(t, date)
+		datesResp[t.Format(repo.DateFormat)] = r.toDateResponse(t, date)
 	}
 	return datesResp
 }
 
 func (r *routerImpl) countryDate(code string, date string) *dateResponse {
-	t, err := time.Parse(constants.DateFormat, date)
+	t, err := time.Parse(repo.DateFormat, date)
 	if err != nil {
 		return nil
 	}
@@ -111,7 +110,7 @@ func (r *routerImpl) toDateResponse(date time.Time, info repo.RecordInfo) *dateR
 	return &dateResponse{
 		response:  r.toResponse(info),
 		EpochDays: date.Unix() / (int64(time.Hour.Seconds()) * 24),
-		Date:      date.Format(constants.DateFormat),
+		Date:      date.Format(repo.DateFormat),
 	}
 }
 
