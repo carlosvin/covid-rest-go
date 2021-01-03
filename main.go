@@ -7,6 +7,7 @@ import (
 
 	"github.com/carlosvin/covid-rest-go/handlers"
 	"github.com/carlosvin/covid-rest-go/readers"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +20,14 @@ func main() {
 	}
 	repository.Watch(time.Hour)
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
 	r.GET("/countries", router.Countries)
 	r.GET("/countries/:code", router.Country)
 	r.GET("/countries/:code/dates", router.CountryDates)
