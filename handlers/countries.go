@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Router interface with API supported calls by route
 type Router interface {
 	Countries(c *gin.Context)
 	Country(c *gin.Context)
@@ -52,7 +53,7 @@ func (r *routerImpl) CountryDate(c *gin.Context) {
 	dateParam := c.Param("date")
 	resp := r.countryDate(codeParam, dateParam)
 	if resp != nil {
-		c.JSON(200, r.countryDate(codeParam, dateParam))
+		c.JSON(200, resp)
 	} else {
 		c.JSON(404, gin.H{"message": "not found"})
 	}

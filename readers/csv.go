@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -37,13 +38,11 @@ func (c *csvReader) Read() (*Record, error) {
 }
 
 const (
-	casesIndex       = 4
-	casesCountryCode = 7
-	casesCountryName = 6
-	deathsIndex      = 5
-	dayIndex         = 1
-	monthIndex       = 2
-	yearIndex        = 3
+	dateIndex        = 0
+	casesIndex       = 2
+	deathsIndex      = 3
+	casesCountryName = 4
+	casesCountryCode = 5
 )
 
 func (c *csvReader) toRecord(record []string) (*Record, error) {
@@ -69,15 +68,16 @@ func (c *csvReader) toRecord(record []string) (*Record, error) {
 }
 
 func (c *csvReader) toDate(record []string) (time.Time, error) {
-	y, err := strconv.Atoi(record[yearIndex])
+	dmy := strings.Split(record[dateIndex], "/")
+	d, err := strconv.Atoi(dmy[0])
 	if err != nil {
 		return time.Now(), err
 	}
-	m, err := strconv.Atoi(record[monthIndex])
+	m, err := strconv.Atoi(dmy[1])
 	if err != nil {
 		return time.Now(), err
 	}
-	d, err := strconv.Atoi(record[dayIndex])
+	y, err := strconv.Atoi(dmy[2])
 	if err != nil {
 		return time.Now(), err
 	}

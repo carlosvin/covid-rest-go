@@ -86,6 +86,9 @@ func (r *repoImpl) Fetch() error {
 		if err == io.EOF {
 			break
 		}
+		if err != nil {
+			return err
+		}
 		r.info.Add(record)
 		country, found := r.countries[record.CountryCode]
 		if !found {
