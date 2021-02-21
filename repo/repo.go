@@ -67,9 +67,9 @@ func NewRepo(factory readers.Factory) Repo {
 	repo := repoImpl{
 		countries: make(map[string]Country),
 		info: &recordInfo{
-			confirmed: 0,
-			deaths:    0,
-			path:      "",
+			confirmed:    0,
+			positiveRate: 0,
+			path:         "",
 		},
 		factory: factory,
 	}
@@ -97,9 +97,9 @@ func (r *repoImpl) Fetch() error {
 				name:  record.CountryName,
 				dates: make(map[time.Time]RecordInfo),
 				info: &recordInfo{
-					confirmed: 0,
-					deaths:    0,
-					path:      fmt.Sprintf("%s/countries/%s", r.info.Path(), record.CountryCode),
+					confirmed:    0,
+					positiveRate: 0,
+					path:         fmt.Sprintf("%s/countries/%s", r.info.Path(), record.CountryCode),
 				},
 			}
 			r.countries[record.CountryCode] = country
@@ -110,9 +110,10 @@ func (r *repoImpl) Fetch() error {
 }
 
 type recordInfo struct {
-	confirmed int
-	path      string
-	deaths    int
+	confirmed    int
+	path         string
+	positiveRate float64
+	total        int
 }
 
 type recordCountry struct {
@@ -139,9 +140,10 @@ func (c *recordCountry) Add(record *readers.Record) {
 	date, found := c.dates[record.Date]
 	if !found {
 		date = &recordInfo{
-			confirmed: 0,
-			deaths:    0,
-			path:      fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format(DateFormat)),
+			confirmed:    0,
+			positiveRate: 0,
+			total:        0,
+			path:         fmt.Sprintf("%s/dates/%s", c.info.Path(), record.Date.Format(DateFormat)),
 		}
 		c.dates[record.Date] = date
 	}
@@ -152,13 +154,14 @@ func (r *recordInfo) ConfirmedCases() int {
 	return r.confirmed
 }
 
-func (r *recordInfo) DeathsNumber() int {
-	return r.deaths
+func (r *recordInfo) PositiveRate() float64 {
+	return r.positiveRate / float64(r.total)
 }
 func (r *recordInfo) Path() string {
 	return r.path
 }
 func (r *recordInfo) Add(r2 *readers.Record) {
 	r.confirmed += r2.Cases
-	r.deaths += r2.Deaths
+	r.positiveRate += r2.PositiveRate
+	r.total++
 }

@@ -117,16 +117,16 @@ func (r *routerImpl) toDateResponse(date time.Time, info repo.RecordInfo) *dateR
 
 func (r *routerImpl) toResponse(rec repo.RecordInfo) *response {
 	return &response{
-		Deaths:    rec.DeathsNumber(),
-		Confirmed: rec.ConfirmedCases(),
-		Path:      rec.Path(),
+		PositiveRate: rec.PositiveRate(),
+		Confirmed:    rec.ConfirmedCases(),
+		Path:         rec.Path(),
 	}
 }
 
 type response struct {
-	Deaths    int    `json:"deathsNumber"`
-	Confirmed int    `json:"confirmedCases"`
-	Path      string `json:"path"`
+	PositiveRate float64 `json:"positiveRate"`
+	Confirmed    int     `json:"confirmedCases"`
+	Path         string  `json:"path"`
 }
 
 type countryResponse struct {

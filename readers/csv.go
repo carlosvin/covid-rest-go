@@ -6,12 +6,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icza/gox/timex"
 )
 
 var client = http.Client{Timeout: 10 * time.Second}
 
 func NewCsvReader() (DataSource, error) {
-	resp, err := client.Get("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv")
+	resp, err := client.Get("https://opendata.ecdc.europa.eu/covid19/testing/csv")
 	if err != nil {
 		return nil, err
 	}
@@ -38,11 +40,11 @@ func (c *csvReader) Read() (*Record, error) {
 }
 
 const (
-	dateIndex        = 0
-	casesIndex       = 2
-	deathsIndex      = 3
-	casesCountryName = 4
-	casesCountryCode = 5
+	dateWeekIndex    = 2
+	casesIndex       = 6
+	casesCountryName = 0
+	casesCountryCode = 1
+	positiveRate     = 10
 )
 
 func (c *csvReader) toRecord(record []string) (*Record, error) {
@@ -50,36 +52,32 @@ func (c *csvReader) toRecord(record []string) (*Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	deaths, err := strconv.Atoi(record[deathsIndex])
+	positiveRate, err := strconv.ParseFloat(record[positiveRate], 32)
 	if err != nil {
-		return nil, err
+		positiveRate = 0
 	}
 	date, err := c.toDate(record)
 	if err != nil {
 		return nil, err
 	}
 	return &Record{
-		Cases:       cases,
-		CountryCode: record[casesCountryCode],
-		CountryName: record[casesCountryName],
-		Deaths:      deaths,
-		Date:        date,
+		Cases:        cases,
+		CountryCode:  record[casesCountryCode],
+		CountryName:  record[casesCountryName],
+		PositiveRate: positiveRate,
+		Date:         date,
 	}, nil
 }
 
 func (c *csvReader) toDate(record []string) (time.Time, error) {
-	dmy := strings.Split(record[dateIndex], "/")
-	d, err := strconv.Atoi(dmy[0])
+	yearWeek := strings.Split(record[dateWeekIndex], "-W")
+	y, err := strconv.Atoi(yearWeek[0])
 	if err != nil {
 		return time.Now(), err
 	}
-	m, err := strconv.Atoi(dmy[1])
+	w, err := strconv.Atoi(yearWeek[1])
 	if err != nil {
 		return time.Now(), err
 	}
-	y, err := strconv.Atoi(dmy[2])
-	if err != nil {
-		return time.Now(), err
-	}
-	return time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC), nil
+	return timex.WeekStart(y, w), nil
 }

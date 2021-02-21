@@ -8,9 +8,9 @@ type DataSource interface {
 }
 
 type Record struct {
-	Date        time.Time
-	Cases       int
-	Deaths      int
-	CountryCode string
-	CountryName string
+	Date         time.Time
+	Cases        int
+	PositiveRate float64
+	CountryCode  string
+	CountryName  string
 }

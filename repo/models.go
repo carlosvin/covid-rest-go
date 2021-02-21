@@ -8,7 +8,7 @@ import (
 
 type RecordInfo interface {
 	ConfirmedCases() int
-	DeathsNumber() int
+	PositiveRate() float64
 	Path() string
 	Add(r *readers.Record)
 }
