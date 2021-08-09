@@ -2,6 +2,7 @@ package readers
 
 import (
 	"encoding/csv"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -50,7 +51,7 @@ const (
 func (c *csvReader) toRecord(record []string) (*Record, error) {
 	cases, err := strconv.Atoi(record[casesIndex])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error parsing %v: %s", record, err)
 	}
 	positiveRate, err := strconv.ParseFloat(record[positiveRate], 32)
 	if err != nil {
@@ -58,7 +59,7 @@ func (c *csvReader) toRecord(record []string) (*Record, error) {
 	}
 	date, err := c.toDate(record)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error parsing %v: %s", record, err)
 	}
 	return &Record{
 		Cases:        cases,

@@ -87,7 +87,8 @@ func (r *repoImpl) Fetch() error {
 			break
 		}
 		if err != nil {
-			return err
+			log.Printf("Error processing record %v: %s", record, err)
+			continue
 		}
 		r.info.Add(record)
 		country, found := r.countries[record.CountryCode]
